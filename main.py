@@ -48,7 +48,7 @@ while True :
                     
 
         
-    nb_image = len(os.listdir("images"))
+    nb_image = len(os.listdir("images/test"))
     i = 1
     liste = []
     # initialize dlib's face detector (HOG-based) and then create
@@ -59,7 +59,7 @@ while True :
     predictor2 = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 
     while (i<(nb_image+1)) :
-        image = cv2.imread("images/image" + str(i) +".png")
+        image = cv2.imread("images/test/image" + str(i) +".png")
         print ("Analyse de l'image n° ",i)
         pointcomp = photo (image,detector2,predictor2)
         liste.append(pointcomp)

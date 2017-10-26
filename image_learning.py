@@ -14,12 +14,14 @@ import imutils
 import dlib
 import random
 import time
+from threading import Thread
 
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
 import keras
 from keras.models import Sequential
+from keras.models import load_model
 from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
 
@@ -69,7 +71,6 @@ def next_batch(n):
     y = np.zeros( shape=(n,2), dtype=np.float32)
     for i in range(0, n):
         x[i],y[i] = point_image(detector2,predictor2)
-    print ("Tableau de valeur : ", x)
     return x,y
         
 # Creation, parametrage et utilisation du reseau
@@ -80,22 +81,21 @@ def main():
     # in the first layer, you must specify the expected input data shape:
     # here, 2-dimensional vectors.
 	#The last output has to be the number of class
-    model.add(Dense(136, activation='relu', input_dim=136))
-    model.add(Dropout(0.5))
-    model.add(Dense(68, activation='relu'))
-    model.add(Dropout(0.5))
+    model.add(Dense(136, activation='softmax', input_dim=136))
+    model.add(Dense(68, activation='softmax'))
+    model.add(Dense(34, activation='softmax'))
     model.add(Dense(2, activation='softmax'))
 
-    sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-    model.compile(loss='categorical_crossentropy',
+    sgd = SGD(lr=0.001, decay=1e-6, momentum=0.5, nesterov=True)
+    model.compile(loss='mean_squared_error',
                   optimizer=sgd,
                   metrics=['accuracy'])
 		  
-    training_epochs = 50
+    training_epochs = 10
     i = 1
     for epoch in range(training_epochs):
-        x_train, y_train = next_batch(100)
-        model.fit(x_train, y_train, epochs=50, batch_size=100)
+        x_train, y_train = next_batch(20)
+        model.fit(x_train, y_train, epochs=150, batch_size=20)
         print ("nombre d'iteration = ", i)
         i += 1 
 	
@@ -108,8 +108,12 @@ def main():
     q = model.predict( np.array( [single_x_test] )  )
     print(single_x_test, "is classified as ", q, " and real result is ", single_y_result)
 
+    model.save("mon_modele.h5")
+    del model
+    
+
     fin = time.time()
-    print("Temps total : ", fin-debut,"s")
+    print("Temps total : ", (fin-debut)/60 ,"minutes")
 
 if __name__ == "__main__":
     main()
