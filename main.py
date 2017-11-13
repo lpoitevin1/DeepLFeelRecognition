@@ -31,13 +31,13 @@ while True :
     
     # boucle pour prendre une photo si l'utilisateur n'en a pas 
     rep = input ("Avez vous deja une photo dans la base de données ? (o/n) ")
-    nb_image = len(os.listdir("images"))
+    nb_image = len(os.listdir("images/test/"))
     if (rep == "n" or rep == "N") :
         ccam = True
         while (ccam) :
             print (nb_image)
             capture_cam(nb_image+1,detector,predictor,vs)
-            img = cv2.imread("images/image" + str(nb_image+1) + ".png")
+            img = cv2.imread("images/test/image" + str(nb_image+1) + ".png")
             img = imutils.resize(img, width=400)
             print ("Creation de l'image : image" + str(nb_image+1) + " terminé !")
             ccam = False
@@ -48,7 +48,7 @@ while True :
                     
 
         
-    nb_image = len(os.listdir("images/test"))
+    nb_image = len(os.listdir("images/test/"))
     i = 1
     liste = []
     # initialize dlib's face detector (HOG-based) and then create
