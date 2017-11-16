@@ -12,76 +12,93 @@ import cv2
 import glob
 import os
 
+
+# Fonction qui retourne le nombre d'image de la video lu
 def nombre_image (video) :
-    # Create a VideoCapture object and read from input file
-    # If the input is the camera, pass 0 instead of the video file name
+    # Ouvre le flux video
     cap = cv2.VideoCapture(video)
     
-    # Check if camera opened successfully
+    # Check si le flux est ouvert ou pas 
     if (cap.isOpened()== False): 
         print("Error opening video stream or file")
     
+    # Compteur d'image initialisé a 0
     i = 0
-    # Read until video is completed
+    # Lit la video
     while(cap.isOpened()):
-    # Capture frame-by-frame
+    # A chaque frame (image) incremente i
         ret, frame = cap.read()
         if ret == True:
             i += 1 
-    # Break the loop
+    # Sort du while quand il n'y a plus de frame a afficher
         else: 
             break
     return i
 
+# Fonction qui fait une capture d'image de la video sur l'image i-1
 def capture_image(video,n_image,dossier) :
     cap = cv2.VideoCapture(video)
-    # Check if camera opened successfully
+    # Check si le flux est ouvert ou pas 
     if (cap.isOpened()== False): 
         print("Error opening video stream or file")
     i = 0
-    # Read until video is completed
+
     while(cap.isOpened()):
-    # Capture frame-by-frame
+
         ret, frame = cap.read()
         if ret == True:
+            # Enregistre l'image i - 1 et l'enregistre dans le bon dossier 
             if i == n_image - 1  :
                 nb = len(os.listdir("images/"+dossier+"_photo/"))
                 cv2.imwrite("images/"+dossier+"_photo/"+ str(nb+1)+".png",frame)
                 print("images/"+dossier+"_photo/"+ str(nb+1)+".png")
             i += 1
-    # Break the loop
+
         else: 
             break     
 
+# Fonction qui modifie une image, pour epaissir la base de données
+# Effectue une rotation d'une image de 10° a D et a G
 def modif_image(image,dossier) :
+    # Recupere le nombre d'image dans le dossier, pour enregistrer les nouvelles images
+    # sans ecraser les images existantes
     i = len(os.listdir("images/"+dossier+"_photo/"))
     img = cv2.imread(image)
     rows,cols = img.shape[:2]
+    # Premiere modif de 10°
     M = cv2.getRotationMatrix2D((cols/2,rows/2),10,1)
     dst = cv2.warpAffine(img,M,(cols,rows))
     cv2.imwrite("images/"+dossier+"_photo/"+str(i+1)+".png",dst)
+    # Deuxieme modif de -10°
     M2 = cv2.getRotationMatrix2D((cols/2,rows/2),-10,1)
     dst2 = cv2.warpAffine(img,M2,(cols,rows))
     cv2.imwrite("images/"+dossier+"_photo/"+str(i+2)+".png",dst2)
 
 
+# Focntion qui creé des images pour un dossier specifique (donc une emotion)
 def creation_image (dossier) :
+    # Dans un dossier, recupere tout les fichiers au format .avi ou .mpeg
     liste = glob.glob("images/"+dossier+"/*.avi") + glob.glob("images/"+dossier+"/*.mpeg")
     len_liste = len(liste)
     print ("Nombre de videos dans le dossier : ", len_liste)
     i = 0
+    # Utilise capture_image pour transformer toute les videos en image
     while (i<len_liste) : 
         nb = nombre_image(liste[i])
         capture_image(liste[i],i,dossier)
         i += 1
     i = 0
     max = len(os.listdir("images/"+dossier+"_photo/"))
+    # Affiche le taux de conversion des videos en images
+    # (Error) Toutes les videos ne sont pas convertie en videos
     print ("Nombre d'image sur le nombre de video du dossier : ", max,"/",len_liste, " taux : ", (max/len_liste)*100)
+    # Effectue les modifs sur toute les images nouvellements creé
     while (i<max) :
         modif_image("images/"+dossier+"_photo/"+str(i+1)+".png",dossier)
         print ("Modif effectue sur l'image ", i+1 )
         i += 1
-    
+
+# Fonction qui boucle creation_image sur tout les dossiers (donc sur les 6 emotions)  
 def main () :
     tab = ['anger','happiness','disgust','fear','sadness','surprise']
     print (tab)

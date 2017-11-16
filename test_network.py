@@ -27,19 +27,24 @@ from keras.models import load_model
 from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
 
+
+# Code pour un reseau de neurones, voir image_learning.py pour plus de commentaires
 def network(a,n) :
     model = Sequential()
     # Dense(64) is a fully-connected layer with 64 hidden units.
     # in the first layer, you must specify the expected input data shape:
     # here, 2-dimensional vectors.
 	#The last output has to be the number of class
+
+    # Le paramtetre n module le nombre de couche du reseau
     model.add(Dense(68, activation='relu', input_dim=68))
     model.add(Dropout(0,5))
     for i in range (0,n) :
         model.add(Dense(68, activation='relu'))
         model.add(Dropout(0,5))
     model.add(Dense(6, activation='softmax'))
-
+    
+    # Le parametre a module le lr
     sgd = SGD(lr=a, decay=1e-6, momentum=0.5, nesterov=True)
     model.compile(loss='mean_squared_error',
                   optimizer=sgd,
@@ -60,7 +65,13 @@ def network(a,n) :
 
     return score, model      
 
+# Le main teste plusieurs reseaux en changeant les parametres a et n
+# Et renvoie celui qui a le plus haut taux de reussite
+# Ici on teste 100 configs differents 
+# n allant de 0 a 10 -> nb de couches supplementaires
+# a allant de 0,1 a 10^⁻10
 def main() :
+
     debut = time.time()
     res = 0
     for i in range (0,10) :
@@ -71,6 +82,7 @@ def main() :
             score, model = network(a,n)
             inter = time.time()
             print ("Temps intermediaire : ", (inter-debut)/60, " min")
+
             if score[1] > res :
                 final = ""
                 res = score[1]
@@ -81,7 +93,9 @@ def main() :
                 model.save("model.h5")
                 del model
                 print("Le modele est sauvegardé") 
+
             print ("Le meilleur modele est ", final, " avec un taux de ", res)
+
     fin = time.time()
     print("Le reseau utilisé est le n°", final, " avec un score de ", res)
     print("Temps du test : ", (fin-debut)/60," min")
