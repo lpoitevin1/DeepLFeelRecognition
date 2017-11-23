@@ -21,6 +21,18 @@ from threading import Thread
 import keras
 from keras.models import load_model
 
+def lecture_tab (res) :
+    n = 0
+    test = 0
+    for i in range (0, len(res[0])) :
+        if np.any(res [0][i] > test) :
+            test = res[0][i]
+            n = i
+    tab = ['Surprise','Sadness','Happiness','Fear','Digust','Anger']
+    return tab[n]
+
+
+
 
 def main() :
     # charge et compile le modele
@@ -38,6 +50,7 @@ def main() :
     print("Demarrage de la webcam...")
     vs = VideoStream(-1).start()
     time.sleep(2.0)
+
 
     
 	# boucle sur chaque image du flux de la webcam
@@ -71,21 +84,36 @@ def main() :
  
 			# boucle sur les coordonnées de chaque point du visage et les 
 			# affiche sur l'image
+            '''
             tab = []
             shape_a = []
             shape_b = []
+            '''
             for (x1, y1) in shape:
                 cv2.circle(frame, (x1, y1), 1, (0, 0, 255), -1)
+            '''
                 shape_a.append(x1)
                 shape_b.append(y1)
             tab = np.concatenate((shape_a, shape_b))
             print (tab)
             print ("Nombre de points : ", len(tab))
+            '''
+
+            a = []
+            a = selection_point (shape,a,w)
 
             # renvoie le resultat des points apres analyse par le modele du reseau (error)
-            res = model.predict (np.array([tab]))
+            res = model.predict (np.array([a]))
+            print (a)
             print(res)
-            
+
+            emotion = lecture_tab (res)
+            print (emotion)
+
+            cv2.putText(frame, emotion, (x + int(w/4), y + h + 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
+
+
 
 		# affiche l'image 
         cv2.imshow("Webcam", frame)		
@@ -98,11 +126,6 @@ def main() :
 	# ferme la fenetre de la webcam
     cv2.destroyAllWindows()
 
-    ''' 
-    ramener le code de la webcam ici, predire les resultats a chaque image (voir image_learning)
-    en lui donnant les points de shape (mis dasn un tableau de 136 points)
-    faire une fonction enterpretant le resultat et afficher ce resultat (happiness, surprise etc..)
-    a cote de la face sur la webcam
-    '''
+
 if __name__ == "__main__":
     main()

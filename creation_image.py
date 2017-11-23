@@ -7,6 +7,7 @@ from calc_points import *
 import numpy as np
 import argparse
 import imutils
+import time
 import dlib
 import cv2
 import glob
@@ -73,19 +74,27 @@ def modif_image(image,dossier) :
     M2 = cv2.getRotationMatrix2D((cols/2,rows/2),-10,1)
     dst2 = cv2.warpAffine(img,M2,(cols,rows))
     cv2.imwrite("images/"+dossier+"_photo/"+str(i+2)+".png",dst2)
+    # Decale l'image en bas a droite de 50 pixels a droite et 50 pixels en bas
+    M3 = np.float32([[1,0,50],[0,1,50]])
+    dst3 = cv2.warpAffine(img,M3,(cols,rows))
+    cv2.imwrite("images/"+dossier+"_photo/"+str(i+3)+".png",dst3)
+    # Decale l'image en haut a gauche de 50 pixels a gauche et 50 pixels en haut
+    M4 = np.float32([[1,0,-50],[0,1,-50]])
+    dst4 = cv2.warpAffine(img,M4,(cols,rows))
+    cv2.imwrite("images/"+dossier+"_photo/"+str(i+4)+".png",dst4)
 
 
 # Focntion qui creé des images pour un dossier specifique (donc une emotion)
 def creation_image (dossier) :
-    # Dans un dossier, recupere tout les fichiers au format .avi ou .mpeg
-    liste = glob.glob("images/"+dossier+"/*.avi") + glob.glob("images/"+dossier+"/*.mpeg")
+    # Dans un dossier, recupere tout les fichiers au format .mpeg
+    liste = glob.glob("images/"+dossier+"/*.mpeg")
     len_liste = len(liste)
     print ("Nombre de videos dans le dossier : ", len_liste)
     i = 0
     # Utilise capture_image pour transformer toute les videos en image
     while (i<len_liste) : 
         nb = nombre_image(liste[i])
-        capture_image(liste[i],i,dossier)
+        capture_image(liste[i],nb,dossier)
         i += 1
     i = 0
     max = len(os.listdir("images/"+dossier+"_photo/"))

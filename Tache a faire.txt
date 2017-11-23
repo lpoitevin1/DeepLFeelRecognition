@@ -8,5 +8,6 @@ Piste d'amelioration du reseau :
 Tester sur different reseaux (100 configurations differentes) en changeant le lr et le nombre de couches (le meilleur resultat est de 40% avec lr = 0,1 et 1 couche supplementaire). Tres tres long, 3h rien que pour ces tests la et en testant un peu mieux la meilleur configuration, les resultats ne sont pas utilisables...Deception 
 - Teste du reseau avec des nombres random :
 Tester avec une configuration tres simple (si y = [0,1], que des nombres inferieur a 121, si y = [1,0], que des nombres entre 120 et 241) et resultat tres moyen (50% de reussite, des taux d'erreurs qui varie tres faiblement) -> LE RESEAU N'EST PAS BON
+Deuxieme test, les resultats sont concluants avec certaines reglages, 4 couches de nombre de point/2 de neurones avec lr = 0,0001. Si on modifie ces valeurs legerements les resultats sont completements differents.
 - Normaliser les données en entré et/ou envoyer la distance des points par rapport a un point central :
 Tester avec training_epochs = 10, batch = 20 et epochs = 15 (petit reseau), les resultats ne sont pas concluant, le taux d'erreur ne diminue pas au sein d'un même training, taux de reussite = 40% mais resultats finaux trop homogenes pour etre utilisable -> LE RESEAU N'EST PAS BON

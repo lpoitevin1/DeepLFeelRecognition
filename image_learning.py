@@ -33,13 +33,17 @@ detector2 = dlib.get_frontal_face_detector()
 predictor2 = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 debut = time.time()
 
+# Ouverture d'un fichier pour ecrire les données en entré
+fichier = open("Données.txt","w")
+np.set_printoptions(threshold=np.nan)
+
+
 # Choisie aleatoirement une image entre 6 emotions et recupere les
 # points caracteristiques + associe a une emotion 
 def point_image (detector2,predictor2,n) :
     # Tire un nombre entre 1 et 6
     # Chaque nombre est une emotion, donc un dossier
     j = random.randrange(1,7,1)
-    #print ("Le dossier sera le numero ",j)
     x = []
     shape_a = []
     shape_b = []
@@ -114,7 +118,9 @@ def point_image (detector2,predictor2,n) :
             (c, d, w, h) = face_utils.rect_to_bb(rect)
         y = np.array([1,0,0,0,0,0])          
     i = 0
+    print ("Photo n°", k," dans le dossier ", j)
     # Trouve le point central de l'image par rapport aux coordonnées des 68 autres points
+    """
     pt_a, pt_b = point_central(shape)
     while (i<len(shape)):
         (a,b) = shape[i]
@@ -126,10 +132,12 @@ def point_image (detector2,predictor2,n) :
         '''
         x.append(sqrt(((pt_a-a)*(pt_a-a))+((pt_b-b)*(pt_b-b)))/w)
         i += 1
+    """
     '''
     x = np.concatenate((shape_a, shape_b))
     print("Anayse de l'image n°", k," dans le y ", y , " . Nombre de point : ", len(x))
     '''
+    x = selection_point(shape,x,w)
     # Affiche une image toute les 10 images pour verifier les points
     # Surtout la creation du point central
     """
@@ -152,6 +160,24 @@ def point_image (detector2,predictor2,n) :
     cv2.destroyAllWindows()
     """
     return x, y
+
+# Fonction qui selectionne que certaines longueur interessante comme données
+def selection_point (shape,x,w) :
+    i = 0
+    sx = []
+    sy = []
+    while (i < len(shape)) :
+        (a,b) = shape[i]
+        sx.append(a)
+        sy.append(b)
+        i += 1
+    point = [17,1,58,9,22,18,27,23,40,37,46,43,41,38,47,44,28,34,36,32,55,49,52,58]
+    j = 0
+    while (j < len(point)) :
+        x.append(sqrt(((sx[point[j]]-sx[point[j+1]])*(sx[point[j]]-sx[point[j+1]]))+((sy[point[j]]-sy[point[j+1]])*(sy[point[j]]-sy[point[j+1]])))/w)
+        j +=2
+    return x
+    
 
 # Fonction qui renvoie les coordonnées d'un point, le point central d'une image
 def point_central(shape) :
@@ -182,19 +208,20 @@ def nb_random():
             x.append(random.randrange (121,141,1))
         y = [1,0]
         
-    print ("Tableau de ", len(x)," nombres random crée : ", x," qui est classé dans le y = ",y)
     return x, y
 
 
 
 # Boucle n fois pour recuperer les données de n images
 def next_batch(n):
-    x = np.zeros( shape=(n,68), dtype=np.float32)
+    x = np.zeros( shape=(n,12), dtype=np.float32)
     y = np.zeros( shape=(n,6), dtype=np.float32)
     for i in range(0, n):
         x[i],y[i] = point_image(detector2,predictor2,i)
-        """x[i],y[i] = nb_random();"""
+        """x[i],y[i] = nb_random()"""
     print ("Fin de la creation du batch de ", n," elements")
+    fichier.write(str(x))
+    fichier.write(str(y))
     return x,y
         
 # Creation, parametrage et utilisation du reseau
@@ -207,13 +234,11 @@ def main():
 	#The last output has to be the number of class
 
     # Nombre de couche du reseau avec leur methode d'activation
-    model.add(Dense(68, activation='relu', input_dim=68))
+    model.add(Dense(34, activation='relu', input_dim=12))
     model.add(Dropout(0,5))
-    model.add(Dense(136, activation='relu'))
+    model.add(Dense(34, activation='relu'))
     model.add(Dropout(0,5))
-    model.add(Dense(136, activation='relu'))
-    model.add(Dropout(0,5))
-    model.add(Dense(68, activation='relu'))
+    model.add(Dense(15, activation='relu'))
     model.add(Dropout(0,5))
     model.add(Dense(6, activation='softmax'))
 
@@ -224,13 +249,15 @@ def main():
                   metrics=['accuracy'])
                   
     # Phase de "fit", d'entrainement du reseau
-    training_epochs = 20
+    training_epochs = 10
     i = 1
     for epoch in range(training_epochs):
+        fichier.write("batch n°"+str(epoch))
         x_train, y_train = next_batch(20)
         model.fit(x_train, y_train, epochs=15, batch_size=20, shuffle=True)
         print ("nombre de training_epochs = ", i)
         i += 1
+
 	
     # Phase d'evaluation du reseau
     x_test, y_test = next_batch(20)
@@ -249,6 +276,10 @@ def main():
     q1 = model.predict (np.array ([single_x_load]))
     print("Prediction du modele chargé : Il est classé dans ", q1," et le resultat réel est ", single_y_load)
     """
+
+    # Fichier des données en entré
+    fichier.close()
+    print ("Fichier Données.txt creé")
 
     # enregistre les resultats du modele .h5
     model.save("model.h5")
