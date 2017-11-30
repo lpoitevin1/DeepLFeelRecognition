@@ -99,7 +99,6 @@ def creation_image (dossier) :
     i = 0
     max = len(os.listdir("images/"+dossier+"_photo/"))
     # Affiche le taux de conversion des videos en images
-    # (Error) Toutes les videos ne sont pas convertie en videos
     print ("Nombre d'image sur le nombre de video du dossier : ", max,"/",len_liste, " taux : ", (max/len_liste)*100)
     # Effectue les modifs sur toute les images nouvellements creé
     while (i<max) :

@@ -15,11 +15,17 @@ import imutils
 import dlib
 import random
 import time
+import argparse
 from threading import Thread
 
 
 import keras
 from keras.models import load_model
+
+ap = argparse.ArgumentParser()
+ap.add_argument("-v", "--video", default=-1,
+	help="Choisir une video exploitable par le programme. Par defaut, utilise la webcam")
+args = vars(ap.parse_args())
 
 def lecture_tab (res) :
     n = 0
@@ -28,23 +34,25 @@ def lecture_tab (res) :
         if np.any(res [0][i] > test) :
             test = res[0][i]
             n = i
-    tab = ['Surprise','Sadness','Happiness','Fear','Digust','Anger']
+    #tab = ['Surprise','Sadness','Happiness','Fear','Digust','Anger']
+    tab = ['Happiness','Anger']
     return tab[n]
-
-
 
 
 def main() :
     # charge et compile le modele
     model = load_model("model.h5")
     print("Le modele est chargé")
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])  
+    sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.5, nesterov=True)
+    model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])  
     print("Le modele est compilé") 
     
     # initialiser dlib face detector et lis le fichier shape predictor
     print("Lecture du fichier : facial predictor...")
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+
+
 
     # demarre la webcam et integre le flux a une variable
     print("Demarrage de la webcam...")
@@ -101,6 +109,14 @@ def main() :
 
             a = []
             a = selection_point (shape,a,w)
+
+            '''
+            pt_a, pt_b = point_central_bouche(shape)
+            a1, b1 = shape[49]
+            a2, b2 = shape[55]
+            a.append(sqrt(((pt_a-a1)*(pt_a-a1))+((pt_b-b1)*(pt_b-b1)))/w)
+            a.append(sqrt(((pt_a-a2)*(pt_a-a2))+((pt_b-b2)*(pt_b-b2)))/w)
+            '''
 
             # renvoie le resultat des points apres analyse par le modele du reseau (error)
             res = model.predict (np.array([a]))

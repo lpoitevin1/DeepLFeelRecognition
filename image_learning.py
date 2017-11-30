@@ -43,7 +43,9 @@ np.set_printoptions(threshold=np.nan)
 def point_image (detector2,predictor2,n) :
     # Tire un nombre entre 1 et 6
     # Chaque nombre est une emotion, donc un dossier
-    j = random.randrange(1,7,1)
+    j = random.randrange(1,3,1)
+    if (j == 2) :
+        j = 4
     x = []
     shape_a = []
     shape_b = []
@@ -60,7 +62,7 @@ def point_image (detector2,predictor2,n) :
             shape = predictor2(img, rect)
             shape = face_utils.shape_to_np(shape)
             (c, d, w, h) = face_utils.rect_to_bb(rect)
-        y = np.array([0,0,0,0,0,1])
+        y = np.array([0,1])
     # Idem pour chaque if que pour j = 1
     elif (j == 2) :
         max = len(os.listdir("images/disgust_photo/"))
@@ -94,7 +96,7 @@ def point_image (detector2,predictor2,n) :
             shape = predictor2(img, rect)
             shape = face_utils.shape_to_np(shape)
             (c, d, w, h) = face_utils.rect_to_bb(rect)
-        y = np.array([0,0,1,0,0,0])
+        y = np.array([1,0])
     elif (j == 5) :
         max = len(os.listdir("images/sadness_photo/"))
         k = random.randrange(1,max,1)
@@ -119,28 +121,37 @@ def point_image (detector2,predictor2,n) :
         y = np.array([1,0,0,0,0,0])          
     i = 0
     print ("Photo n°", k," dans le dossier ", j)
+    # Trouve le point central de la bouche par rapport aux -- pts autour de la bouche
+    # Sort la distance entre les deux extremités de la bouche et le point central, normer
+    '''
+    pt_a, pt_b = point_central_bouche(shape)
+    a1, b1 = shape[49]
+    a2, b2 = shape[55]
+    x.append(sqrt(((pt_a-a1)*(pt_a-a1))+((pt_b-b1)*(pt_b-b1)))/w)
+    x.append(sqrt(((pt_a-a2)*(pt_a-a2))+((pt_b-b2)*(pt_b-b2)))/w)
+    print ("Valeur de x : ",x," associé a l'y : ",y)
+    '''
     # Trouve le point central de l'image par rapport aux coordonnées des 68 autres points
-    """
+    '''
     pt_a, pt_b = point_central(shape)
     while (i<len(shape)):
         (a,b) = shape[i]
         # teste le reseau en renvoyant des vecteurs distance entre le point i et le point central
         # normalisé par rapport a la distance w du carre autour du visage
-        '''
+        
         shape_a.append(((a+pt_a)/2)/w) 
         shape_b.append(((b+pt_b)/2)/h)
-        '''
+        
         x.append(sqrt(((pt_a-a)*(pt_a-a))+((pt_b-b)*(pt_b-b)))/w)
         i += 1
-    """
-    '''
     x = np.concatenate((shape_a, shape_b))
     print("Anayse de l'image n°", k," dans le y ", y , " . Nombre de point : ", len(x))
     '''
+    # Selectionne une poignée de point choisie a l'avance
     x = selection_point(shape,x,w)
     # Affiche une image toute les 10 images pour verifier les points
     # Surtout la creation du point central
-    """
+    '''
     if (n == 10) :
         pt_a = int(pt_a)
         pt_b = int(pt_b)
@@ -158,11 +169,37 @@ def point_image (detector2,predictor2,n) :
         cv2.imshow("Test image", img)
         cv2.waitKey(0)
     cv2.destroyAllWindows()
-    """
+    '''
     return x, y
 
-# Fonction qui selectionne que certaines longueur interessante comme données
 def selection_point (shape,x,w) :
+    i = 0
+    sx = []
+    sy = []
+    while (i < len(shape)) :
+        (a,b) = shape[i]
+        sx.append(a)
+        sy.append(b)
+        i += 1
+    right_eye_len = ((sy[41]-sy[39])+(sy[42]-sy[38]))/2
+    x.append(right_eye_len)
+    right_eye_wid = sx[40]-sx[37]
+    x.append(right_eye_wid)
+    lips_len = sy[58]-sy[52]
+    x.append(lips_len)
+    lips_wid = sx[55]-sx[49]
+    x.append(lips_wid)
+    eyebrow_eye_dist = sy[38]-sy[20]
+    x.append(eyebrow_eye_dist)
+    #lips_chin_dist = sy[9]-sy[58]
+    #x.append(lips_chin_dist)
+    lips_gap_dist = sy[67]-sy[63]
+    x.append(lips_gap_dist)
+    return x
+    
+
+# Fonction qui selectionne que certaines longueur interessante comme données
+def selection_point2 (shape,x,w) :
     i = 0
     sx = []
     sy = []
@@ -177,7 +214,23 @@ def selection_point (shape,x,w) :
         x.append(sqrt(((sx[point[j]]-sx[point[j+1]])*(sx[point[j]]-sx[point[j+1]]))+((sy[point[j]]-sy[point[j+1]])*(sy[point[j]]-sy[point[j+1]])))/w)
         j +=2
     return x
-    
+
+# Fonction qui renvoie les coordonnées d'un point, le point central de la bouche
+def point_central_bouche (shape) :
+    x=0
+    y=0
+    i=0
+    j=0
+    while i<len(shape) :
+        if (i>48) :
+            (a,b) = shape[i]
+            x += a
+            y += b
+            j += 1
+        i += 1
+    x = x / 19
+    y = y / 19
+    return x,y
 
 # Fonction qui renvoie les coordonnées d'un point, le point central d'une image
 def point_central(shape) :
@@ -214,8 +267,8 @@ def nb_random():
 
 # Boucle n fois pour recuperer les données de n images
 def next_batch(n):
-    x = np.zeros( shape=(n,12), dtype=np.float32)
-    y = np.zeros( shape=(n,6), dtype=np.float32)
+    x = np.zeros( shape=(n,6), dtype=np.float32)
+    y = np.zeros( shape=(n,2), dtype=np.float32)
     for i in range(0, n):
         x[i],y[i] = point_image(detector2,predictor2,i)
         """x[i],y[i] = nb_random()"""
@@ -234,16 +287,18 @@ def main():
 	#The last output has to be the number of class
 
     # Nombre de couche du reseau avec leur methode d'activation
-    model.add(Dense(34, activation='relu', input_dim=12))
-    model.add(Dropout(0,5))
-    model.add(Dense(34, activation='relu'))
-    model.add(Dropout(0,5))
-    model.add(Dense(15, activation='relu'))
-    model.add(Dropout(0,5))
-    model.add(Dense(6, activation='softmax'))
+    model.add(Dense(100, activation='relu', input_dim=6))
+
+    model.add(Dense(200, activation='relu'))
+
+    model.add(Dense(300, activation='relu'))
+
+    model.add(Dense(100, activation='relu'))
+
+    model.add(Dense(2, activation='sigmoid'))
 
     # Parametre de compilation du reseau
-    sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.5, nesterov=True)
+    sgd = SGD(lr=0.0000001, decay=1e-6, momentum=0.5, nesterov=True)
     model.compile(loss='mean_squared_error',
                   optimizer=sgd,
                   metrics=['accuracy'])
@@ -272,10 +327,6 @@ def main():
     q = model.predict( np.array([single_x_test]))
     print("La prediction est classé dans ", q, " et le resultat réel est ", single_y_result)
 
-    """single_x_load, single_y_load = point_image(detector2,predictor2)
-    q1 = model.predict (np.array ([single_x_load]))
-    print("Prediction du modele chargé : Il est classé dans ", q1," et le resultat réel est ", single_y_load)
-    """
 
     # Fichier des données en entré
     fichier.close()

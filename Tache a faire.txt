@@ -11,3 +11,4 @@ Tester avec une configuration tres simple (si y = [0,1], que des nombres inferie
 Deuxieme test, les resultats sont concluants avec certaines reglages, 4 couches de nombre de point/2 de neurones avec lr = 0,0001. Si on modifie ces valeurs legerements les resultats sont completements differents.
 - Normaliser les données en entré et/ou envoyer la distance des points par rapport a un point central :
 Tester avec training_epochs = 10, batch = 20 et epochs = 15 (petit reseau), les resultats ne sont pas concluant, le taux d'erreur ne diminue pas au sein d'un même training, taux de reussite = 40% mais resultats finaux trop homogenes pour etre utilisable -> LE RESEAU N'EST PAS BON
+- Test sur des données choisie en avance : 12 vecteur normalisé choisi. Resultat pas concluant.
