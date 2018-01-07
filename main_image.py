@@ -21,6 +21,7 @@ from threading import Thread
 
 import keras
 from keras.models import load_model
+from keras.models import model_from_json
 
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video", default=-1,
@@ -41,8 +42,19 @@ def lecture_tab (res) :
 
 def main() :
     # charge et compile le modele
+    """
     model = load_model("model.h5")
     print("Le modele est chargé")
+    """
+
+    json_file = open('model.json', 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    model = model_from_json(loaded_model_json)
+    # load weights into new model
+    model.load_weights("model.h5")
+    print("Loaded model from disk")
+
     sgd = SGD(lr=0.0001, decay=1e-6, momentum=0.5, nesterov=True)
     model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])  
     print("Le modele est compilé") 

@@ -25,6 +25,7 @@ from keras.models import Sequential
 from keras.models import load_model
 from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
+from keras.models import model_from_json
 
 # Reseau de neurone sur les points des images
 print ("Debut de l'analyse des images")
@@ -181,20 +182,20 @@ def selection_point (shape,x,w) :
         sx.append(a)
         sy.append(b)
         i += 1
-    right_eye_len = ((sy[41]-sy[39])+(sy[42]-sy[38]))/2
+    right_eye_len = (((sy[41]-sy[39])+(sy[42]-sy[38]))/2)/w
     x.append(right_eye_len)
-    right_eye_wid = sx[40]-sx[37]
+    right_eye_wid = (sx[40]-sx[37])/w
     x.append(right_eye_wid)
-    lips_len = sy[58]-sy[52]
+    lips_len = (sy[58]-sy[52])/w
     x.append(lips_len)
-    lips_wid = sx[55]-sx[49]
+    lips_wid = (sx[55]-sx[49])/w
     x.append(lips_wid)
-    eyebrow_eye_dist = sy[38]-sy[20]
+    eyebrow_eye_dist = (sy[38]-sy[20])/w
     x.append(eyebrow_eye_dist)
     #lips_chin_dist = sy[9]-sy[58]
     #x.append(lips_chin_dist)
-    lips_gap_dist = sy[67]-sy[63]
-    x.append(lips_gap_dist)
+    lips_nose_dist = (sy[52]-sy[34])/w
+    x.append(lips_nose_dist)
     return x
     
 
@@ -287,13 +288,13 @@ def main():
 	#The last output has to be the number of class
 
     # Nombre de couche du reseau avec leur methode d'activation
-    model.add(Dense(100, activation='relu', input_dim=6))
+    model.add(Dense(6, activation='relu', input_dim=6))
 
-    model.add(Dense(200, activation='relu'))
-
-    model.add(Dense(300, activation='relu'))
+    model.add(Dense(50, activation='relu'))
 
     model.add(Dense(100, activation='relu'))
+
+    model.add(Dense(50, activation='relu'))
 
     model.add(Dense(2, activation='sigmoid'))
 
@@ -332,10 +333,20 @@ def main():
     fichier.close()
     print ("Fichier Données.txt creé")
 
+    #Enregistre le model en .Json
+    model_json = model.to_json()
+    with open("model.json", "w") as json_file:
+        json_file.write(model_json)
+    # serialize weights to HDF5
+    model.save_weights("model.h5")
+    print("Saved model to disk")
+
     # enregistre les resultats du modele .h5
+    """
     model.save("model.h5")
     del model
     print("Le modele est sauvegardé")
+    """
 
     # chrono pour avoir le temps d'execution du reseau de neurones
     fin = time.time()
