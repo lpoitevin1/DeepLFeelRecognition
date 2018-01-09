@@ -53,7 +53,7 @@ while True :
     liste = []
     # initialize dlib's face detector (HOG-based) and then create
     # the facial landmark predictor
-    print ("Debut de l'analyse des images")
+    print ("Debut de l'analyse des images 132145")
     print ("Lecture du fichier : shape predictor...")
     detector2 = dlib.get_frontal_face_detector()
     predictor2 = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")

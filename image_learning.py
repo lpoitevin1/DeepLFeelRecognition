@@ -28,8 +28,8 @@ from keras.optimizers import SGD
 from keras.models import model_from_json
 
 # Reseau de neurone sur les points des images
-print ("Debut de l'analyse des images")
-print ("Lecture du fichier : shape predictor...")
+print ("[INFO] Debut de l'analyse des images")
+print ("[INFO] Lecture du fichier : shape predictor...")
 detector2 = dlib.get_frontal_face_detector()
 predictor2 = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
 debut = time.time()
